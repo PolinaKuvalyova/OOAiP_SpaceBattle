@@ -33,6 +33,7 @@ public class ServerThreadTest
         );
 
         Dictionary<int, ISender> dictionarySend = new();
+        Dictionary<int, ServerThread> dictionaryThread = new();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create And Start Thread", 
         (object[] args) => 
@@ -53,7 +54,15 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Hard Stop The Thread", 
         (object[] args) => 
         {
-            
+            int id = (int) args[0];
+            if(args.Count() == 2)
+            {
+                Action<object[]> ac = (Action<object[]>) args[1];
+                ActionCommand action = new(ac, args);
+                Hwdtech.IoC.Resolve<Hwdtech.ICommand>("Send Command", id, action);
+            }
+            HardStop hardStop = new(dictionaryThread[id]);
+            Hwdtech.IoC.Resolve<Hwdtech.ICommand>("Send Command", id, hardStop);
         }).Execute();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Soft Stop The Thread", 
