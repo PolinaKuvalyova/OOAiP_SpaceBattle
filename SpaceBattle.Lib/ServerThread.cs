@@ -1,7 +1,7 @@
 namespace SpaceBattle.Lib;
 public class ServerThread
 {
-    private Thread thread;
+    public Thread thread;
     private bool stop = false;
     private Action strategy;
     IReceiver receiver;
@@ -27,12 +27,12 @@ public class ServerThread
         cmd.Execute();
     }
 
-    void UpdateBehaviour(Action newBeh)
+    public void UpdateBehaviour(Action newBeh)
     {
         strategy = newBeh;
     }
 
-    void Stop()
+    public void Stop()
     {
         stop = true;
     }
