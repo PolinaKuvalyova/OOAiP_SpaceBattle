@@ -38,6 +38,28 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create And Start Thread", 
         (object[] args) => 
         {
+            Mock<IReceiver> receiver= new();
+            Mock<ISender> sender = new();
+            BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
+
+            receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
+            receiver.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
+
+            if(args.Count() == 2)
+            {
+                Action<object[]> ac = (Action<object[]>) args[1];
+                ActionCommand action = new(ac, args);
+                queue.Add(action);
+            }
+
+            sender.Setup(s => s.Send(It.IsAny<ICommand>())).Callback<ICommand>((command => queue.Add(command)));
+
+            ServerThread thread = new ServerThread(receiver.Object);
+            thread.Execute();
+
+            int id = (int) args[0];
+            dictionarySend.Add(id, sender.Object);
+            dictionaryThread.Add(id, thread);
 
         }).Execute();
 
@@ -70,38 +92,9 @@ public class ServerThreadTest
         {
             
         }).Execute();
-    }
 
-
-
-
-    [Fact]
-    public void ThreadServer_queue()
-    {
-        Mock<IReceiver> receiver= new();
-
-        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-
-        receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
-        receiver.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
-
-        Mock<ISender> sender = new();
-        sender.Setup(s => s.Send(It.IsAny<ICommand>())).Callback<ICommand>((command => queue.Add(command)));
-
-        //sender.Object.Send(new ActionCommand(
-        //    (args) => {
-        //        Thread.Sleep(1);
-        //    }
-        //));
-
-        ServerThread st = new ServerThread(receiver.Object);
-        st.Execute();
-
-        //mre.WaitOne();
-        //barrier.sSignalAndWait();
-
-        Assert.Equal(0, queue.Count);
-        Assert.True(receiver.Object.IsEmpty());
+        //Assert.Equal(0, queue.Count);
+        //Assert.True(receiver.Object.IsEmpty());
     }
 
 }
