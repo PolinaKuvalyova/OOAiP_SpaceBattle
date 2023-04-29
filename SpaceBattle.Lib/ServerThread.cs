@@ -2,9 +2,9 @@ namespace SpaceBattle.Lib;
 public class ServerThread
 {
     public Thread thread;
-    private bool stop = false;
-    private Action strategy;
-    IReceiver receiver;
+    public bool stop = false;
+    public Action strategy;
+    public IReceiver receiver;
     public ServerThread(IReceiver receiver)
     {
         this.receiver = receiver;

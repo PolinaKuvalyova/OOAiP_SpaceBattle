@@ -2,15 +2,15 @@ namespace SpaceBattle.Lib;
 
 public class ActionCommand : ICommand
 {
-    private Action<object[]> action;
-    private object[] args;
-    public ActionCommand(Action<object[]> action, params object[] args)
+    private Action action;
+    //private object[] args;
+    public ActionCommand(Action action)
     {
         this.action = action;
-        this.args = args;
+        //this.args = args;
     }
     public void Execute()
     {
-        action(args);
+        action();
     }
 }
