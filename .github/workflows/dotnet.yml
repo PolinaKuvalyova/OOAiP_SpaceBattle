@@ -1,11 +1,6 @@
 name: .NET
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [ Spaceship_Move_Test, Spaceship_Rotate_Test, master, MacroBuilderSolid, EndMoveCommand, Stateful ]
-  pull_request:
-    branches: [ Spaceship_Move_Test, Spaceship_Rotate_Test, master, MacroBuilderSolid, EndMoveCommand, Stateful  ]
+on: [push]
 
 jobs:
   build:
