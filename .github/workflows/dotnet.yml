@@ -1,31 +1,30 @@
-name: .NET
-
+name: dotnet package
+ 
 on: [push]
-
+ 
 jobs:
   build:
-
+ 
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x' ]
+ 
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Setup test enviroment
-      run: dotnet tool install --global dotnet-coverage
-    - name: Test
-      run: dotnet-coverage collect 'dotnet test' -f xml  -o 'coverage.xml'
-    - name: Check CodeCov YML
-      run: curl --data-binary @codecov.yml https://codecov.io/validate
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-          token: a97d03cf-72ca-4373-a9f9-f29b3ba19e25
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
+      - name: Test
+        run: dotnet test --no-build --verbosity d -p:CollectCoverage=true -p:CoverletOutput=./coverage/coverage.opencover.xml -p:CoverletOutputFormat=opencover
+      - name: Codecov
+        uses: codecov/codecov-action@v3
+        with: 
+          files: SpaceBattle.Lib.Test/coverage/coverage.opencover.xml
 
 
