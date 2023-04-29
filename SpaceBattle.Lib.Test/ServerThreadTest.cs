@@ -142,7 +142,7 @@ public class ServerThreadTest
 
         AutoResetEvent event_ = new AutoResetEvent(false);
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {/*IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();*/});
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
 
@@ -163,7 +163,6 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
         
         event_.WaitOne();
-        //barrier.SignalAndWait();
 
         Assert.True(receiver.IsEmpty());
     }
@@ -179,9 +178,6 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 5);
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-
-        //receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
-        //receiver.Setup(r => r.Receive()).Returns(() => queue.Count == 0);
         
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
         ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4);
