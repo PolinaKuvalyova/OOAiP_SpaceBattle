@@ -146,6 +146,8 @@ public class ServerThreadTest
         event_.WaitOne();
         Assert.True(receiver.IsEmpty());
 
+
+
         var cmd = new ActionCommand(
 
             () => {
