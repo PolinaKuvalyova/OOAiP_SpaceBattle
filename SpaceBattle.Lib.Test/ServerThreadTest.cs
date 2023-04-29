@@ -139,12 +139,11 @@ public class ServerThreadTest
 
         AutoResetEvent event_ = new AutoResetEvent(false);
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();event_.Set();}); 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
         
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
-
+        event_.WaitOne();
         Assert.True(receiver.IsEmpty());
 
         var cmd = new ActionCommand(
