@@ -156,7 +156,6 @@ public class ServerThreadTest
         var cmd = new ActionCommand(
 
             () => {
-                //Thread.Sleep(1);
                 event_.Set();
             }
         );
@@ -203,7 +202,6 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd2).Execute();
 
         event_.WaitOne();
-        //barrier.SignalAndWait();
 
         Assert.True(receiver.IsEmpty());
         event_.WaitOne();
