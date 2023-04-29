@@ -125,9 +125,6 @@ public class ServerThreadTest
         {
             ServerThread ac = (ServerThread) args[0];
             var id = dictionaryThread.FirstOrDefault(x => x.Value == ac).Key;
-            //var keys = from entry in dictionaryThread
-            //    where entry.Value == ac 
-            //    select entry.Key;
             
             return (object) id;
         }
@@ -145,9 +142,6 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-
-        //receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
-        //receiver.Setup(r => r.Receive()).Returns(() => queue.Count == 0);
         
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
 
@@ -225,9 +219,6 @@ public class ServerThreadTest
 
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-
-        //receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
-        //receiver.Setup(r => r.Receive()).Returns(() => queue.Count == 0);
         
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
         ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4);
@@ -251,9 +242,7 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", 4, () => {event_.Set();}).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd1).Execute();
 
-        //Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", 6).Execute();
         event_.WaitOne();
-        //barrier.SignalAndWait();
 
         Assert.False(receiver.IsEmpty());
 
