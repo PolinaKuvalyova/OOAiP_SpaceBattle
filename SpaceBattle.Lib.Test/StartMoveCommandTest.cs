@@ -13,7 +13,7 @@ public class StartMoveCommandTest
         (object[] args) => 
         {
             MovableAdapter adapter = new MovableAdapter(args);
-            return adapter;
+            return (object) 1;
         }).Execute();
 
         Queue<ICommand> queue = new();
