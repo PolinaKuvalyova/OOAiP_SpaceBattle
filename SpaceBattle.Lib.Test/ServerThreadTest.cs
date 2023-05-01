@@ -6,6 +6,7 @@ namespace SpaceBattle.Lib.Test;
 
 public class ServerThreadTest
 {
+    
     [Fact]
     public object IoCInit()
     {
