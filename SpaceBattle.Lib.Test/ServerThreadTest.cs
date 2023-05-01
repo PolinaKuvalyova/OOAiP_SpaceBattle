@@ -1,9 +1,6 @@
 using Hwdtech;
 using Moq;
-using VectorSpaceBattle;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SpaceBattle.Lib.Test;
 
@@ -129,7 +126,7 @@ public class ServerThreadTest
             return (object) id;
         }
         ).Execute();
-        
+
         return scope;
     }
 
