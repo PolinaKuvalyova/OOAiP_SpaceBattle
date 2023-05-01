@@ -15,7 +15,7 @@ namespace SpaceBattle.Lib
         public void Execute()
         {
             this.u_obj.set_property("velocity", velocity);
-            IMovable movable = Hwdtech.IoC.Resolve<IMovable>("Adapters.IUObject.IMoveble", u_obj);
+            IMovable movable = Hwdtech.IoC.Resolve<IMovable>("Adapters.IUObject.IMovable", u_obj);
             ICommand mcd = new MoveCommand(movable);
             ICommand commands = new AddCommand(mcd, queue);
             MacroCommand macro = new MacroCommand(new List<ICommand>{mcd, commands});
