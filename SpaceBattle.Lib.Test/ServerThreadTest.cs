@@ -138,8 +138,6 @@ public class ServerThreadTest
         event_.WaitOne();
         Assert.True(receiver.IsEmpty());
 
-
-
         var cmd = new ActionCommand(
 
             () => {
@@ -190,12 +188,9 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd2).Execute();
 
         event_.WaitOne();
-
         Assert.True(receiver.IsEmpty());
         event_.WaitOne();
-
         Assert.True(st.stop);
-
     }
 
 
@@ -238,9 +233,6 @@ public class ServerThreadTest
         event_.WaitOne();
 
         Assert.False(receiver.IsEmpty());
-
-
         Assert.True(st.stop);
-
     }
 }
