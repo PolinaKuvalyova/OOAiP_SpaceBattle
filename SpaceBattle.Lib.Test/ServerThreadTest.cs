@@ -216,6 +216,7 @@ public class ServerThreadTest
     public void StopThreadTestException()
     {
         var scope = IoCInit();
+        
 
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 40, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
         ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 40);
