@@ -79,6 +79,7 @@ public class ServerThreadTest
             sendHardStop = new ActionCommand(action + (() => {
                     Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, hardStop).Execute();
                 }));
+                
             return sendHardStop;
         }).Execute();
 
