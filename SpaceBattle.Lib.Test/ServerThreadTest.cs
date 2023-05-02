@@ -1,9 +1,6 @@
 using Hwdtech;
 using Moq;
-using VectorSpaceBattle;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SpaceBattle.Lib.Test;
 
@@ -146,7 +143,7 @@ public class ServerThreadTest
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
         
-        IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
+        IReceiver receiver = (Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
         ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4);
 
 
@@ -177,8 +174,6 @@ public class ServerThreadTest
         Assert.True(st.stop);
 
     }
-
-
     [Fact]
     public void HardStopThreadTest()
     {
@@ -205,11 +200,6 @@ public class ServerThreadTest
         var cmd1 = new ActionCommand(
             () => {}
         );
-        var cmd2 = new ActionCommand(
-            () => {
-                event_.Set();
-            }
-        );
 
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", 4, () => {event_.Set();}).Execute();
@@ -219,8 +209,28 @@ public class ServerThreadTest
 
         Assert.False(receiver.IsEmpty());
 
-
         Assert.True(st.stop);
+    }
 
+    [Fact]
+    public void StopThreadTestException()
+    {
+        var scope = IoCInit();
+
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 40, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+        ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 40);
+
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 7, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+        IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 7)).receiver;
+        ServerThread st_stop = new(receiver);
+        StopCommand stopCommand = new(st_stop);
+
+        var cmd = new ActionCommand(
+            () => {
+                Assert.Throws<Exception>(() => {st_stop.Execute();});
+            }
+        );
+
+        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
     }
 }
