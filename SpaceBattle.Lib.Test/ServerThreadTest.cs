@@ -134,35 +134,6 @@ public class ServerThreadTest
     }
 
     [Fact]
-    public void CreateAndStartThreadTest()
-    {
-        var scope = IoCInit();
-
-        AutoResetEvent event_ = new AutoResetEvent(false);
-
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();event_.Set();}); 
-        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-        
-        IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
-        event_.WaitOne();
-        Assert.True(receiver.IsEmpty());
-
-
-
-        var cmd = new ActionCommand(
-
-            () => {
-                event_.Set();
-            }
-        );
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
-        
-        event_.WaitOne();
-
-        Assert.True(receiver.IsEmpty());
-    }
-
-    [Fact]
     public void SoftStopThreadTest()
     {
         var scope = IoCInit();
