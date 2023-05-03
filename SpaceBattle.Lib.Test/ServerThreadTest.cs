@@ -138,7 +138,7 @@ public class ServerThreadTest
         AutoResetEvent event_ = new AutoResetEvent(false);
 
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 5);
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 59);
         //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 6, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
