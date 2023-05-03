@@ -212,5 +212,24 @@ public class ServerThreadTest
         Assert.True(st.stop);
     }
 
-    
+    [Fact]
+    public void StopThreadTestException()
+    {
+        var scope = IoCInit();
+
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 40, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+        ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 40);
+
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 7, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+        IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 7)).receiver;
+        ServerThread st_stop = new(receiver);
+        StopCommand stopCommand = new(st_stop);
+
+        var cmd = new ActionCommand(
+            () => {
+                Assert.Throws<Exception>(() => {st_stop.Execute();});
+            }
+        );
+        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
+    }
 }
