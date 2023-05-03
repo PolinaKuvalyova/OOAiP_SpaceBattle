@@ -228,7 +228,6 @@ public class ServerThreadTest
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 7)).receiver;
         ServerThread st_stop = new(receiver);
         StopCommand stopCommand = new(st_stop);
-
         var cmd = new ActionCommand(
             () => {
                 Assert.Throws<Exception>(() => {st_stop.Execute();});
