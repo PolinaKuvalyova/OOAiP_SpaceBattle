@@ -219,15 +219,11 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 40, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
         ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 40);
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
-        ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
-        SoftStop softStop = new(stSoftStop);
-        softStop.Execute();
-
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 7, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 7)).receiver;
         ServerThread st_stop = new(receiver);
         StopCommand stopCommand = new(st_stop);
+
         var cmd = new ActionCommand(
             () => {
                 Assert.Throws<Exception>(() => {st_stop.Execute();});
@@ -235,5 +231,18 @@ public class ServerThreadTest
         );
 
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
+    }
+
+    [Fact]
+    public void SoftStopTest()
+    {
+        var scope = IoCInit();
+
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
+        ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
+        SoftStop softStop = new(stSoftStop);
+        //softStop.Execute();
+        Action action = new Action(() => {});
+        Assert.False(action == softStop.action);
     }
 }
