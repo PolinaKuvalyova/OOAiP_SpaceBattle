@@ -230,6 +230,7 @@ public class ServerThreadTest
                 Assert.Throws<Exception>(() => {st_stop.Execute();});
             }
         );
+        
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
     }
 }
