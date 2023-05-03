@@ -138,7 +138,6 @@ public class ServerThreadTest
         AutoResetEvent event_ = new AutoResetEvent(false);
 
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 59);
         //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 6, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
@@ -220,6 +219,10 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 40, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
         ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 40);
 
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
+        ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
+        SoftStop softStop = new(stSoftStop);
+
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 7, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
         IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 7)).receiver;
         ServerThread st_stop = new(receiver);
@@ -230,7 +233,7 @@ public class ServerThreadTest
                 Assert.Throws<Exception>(() => {st_stop.Execute();});
             }
         );
-        
+
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
     }
 }
