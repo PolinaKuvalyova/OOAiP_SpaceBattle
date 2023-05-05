@@ -3,9 +3,10 @@ namespace SpaceBattle.Lib;
 public class SoftStop : ICommand
 {
     public ServerThread thread;
-    public Action action = () => {};
+    public Action action;
     public SoftStop(ServerThread thread)
     {
+        this.action = () => {};
         this.thread = thread;
     }
 
