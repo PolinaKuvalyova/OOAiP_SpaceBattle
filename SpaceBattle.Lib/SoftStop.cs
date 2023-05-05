@@ -23,7 +23,6 @@ public class SoftStop : ICommand
     public void Execute()
     {
         int id = Hwdtech.IoC.Resolve<int>("Get id by thread", thread);
-    
         new UpdateBehaviourCommand(thread, () => {
             if(!(thread.receiver.IsEmpty())){
                 thread.HandleCommand();
