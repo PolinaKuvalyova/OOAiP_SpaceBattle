@@ -244,6 +244,4 @@ public class ServerThreadTest
         SoftStop softStop = new(stSoftStop);
         Assert.IsType<Action>(softStop.action);
     }
-
-
 }
