@@ -110,12 +110,6 @@ public class ServerThreadTest
             return dictionaryThread[id];
         }).Execute();
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Send by id", 
-        (object[] args) => 
-        {
-            int id = (int) args[0];
-            return dictionarySend[id];
-        }).Execute();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get id by thread", 
         (object[] args) => 
