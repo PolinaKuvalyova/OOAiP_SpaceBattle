@@ -239,11 +239,13 @@ public class ServerThreadTest
     {
         var scope = IoCInit();
 
-
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
         ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
+
+        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 88);
+        ServerThread stSoftStop1 = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 88);
         SoftStop softStop = new(stSoftStop);
-        SoftStop softStop1 = new(stSoftStop);
+        SoftStop softStop1 = new(stSoftStop1);
         Assert.Equal(softStop.action, softStop1.action);
         Assert.IsType<Action>(softStop.action);
     }
