@@ -6,7 +6,7 @@ public class SoftStop : ICommand
     public Action action;
     public SoftStop(ServerThread thread)
     {
-        this.action = () => {};
+        this.action = new Action(() => {});
         this.thread = thread;
     }
 
@@ -15,10 +15,15 @@ public class SoftStop : ICommand
         this.thread = thread;
         this.action = action;
     }
+
+    public Action Get()
+    {
+        return this.action;
+    }
     public void Execute()
     {
         int id = Hwdtech.IoC.Resolve<int>("Get id by thread", thread);
-     
+    
         new UpdateBehaviourCommand(thread, () => {
             if(!(thread.receiver.IsEmpty())){
                 thread.HandleCommand();

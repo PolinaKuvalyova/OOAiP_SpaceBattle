@@ -248,6 +248,20 @@ public class ServerThreadTest
         SoftStop softStop1 = new(stSoftStop1);
         Assert.Equal(softStop.action, softStop1.action);
         Assert.IsType<Action>(softStop.action);
+
+        Mock<IReceiver> r = new();
+        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
+
+        r.Setup(r => r.Receive()).Returns(() => queue.Take());
+        r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
+
+        ServerThread thread = new(r.Object);
+
+        SoftStop s = new(thread);
+
+        SoftStop s2 = new(thread);
+
+        Assert.Equal(s2.Get(), s.Get());
     }
 
 
