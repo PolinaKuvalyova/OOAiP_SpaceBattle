@@ -259,10 +259,11 @@ public class ServerThreadTest
 
         SoftStop s = new(thread);
 
+        s.Get()();
+
         SoftStop s2 = new(thread);
 
         Assert.Equal(s2.Get(), s.Get());
     }
-
 
 }
