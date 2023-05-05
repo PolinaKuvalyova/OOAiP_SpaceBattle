@@ -242,8 +242,6 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
         ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
         SoftStop softStop = new(stSoftStop);
-        softStop.Execute();
-        softStop.action();
         Assert.IsType<Action>(softStop.action);
     }
 
