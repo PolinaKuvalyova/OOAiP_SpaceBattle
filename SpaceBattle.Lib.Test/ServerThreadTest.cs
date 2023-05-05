@@ -110,6 +110,12 @@ public class ServerThreadTest
             return dictionaryThread[id];
         }).Execute();
 
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Send by id", 
+        (object[] args) => 
+        {
+            int id = (int) args[0];
+            return dictionarySend[id];
+        }).Execute();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get id by thread", 
         (object[] args) => 
@@ -236,6 +242,9 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
         ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
         SoftStop softStop = new(stSoftStop);
-        Assert.IsType<Action>(softStop.action);
+        SoftStop softStop1 = new(stSoftStop);
+        Assert.Equal(softStop.action, softStop1.action);
     }
+
+
 }
