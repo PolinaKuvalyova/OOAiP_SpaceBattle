@@ -251,6 +251,7 @@ public class ServerThreadTest
         ServerThread stSoftStop1 = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 88);
         SoftStop softStop = new(stSoftStop);
         SoftStop softStop1 = new(stSoftStop1);
+        
         Assert.Equal(softStop.action, softStop1.action);
         Assert.IsType<Action>(softStop.action);
 
@@ -259,7 +260,7 @@ public class ServerThreadTest
 
         //r.Setup(r => r.Receive()).Returns(() => queue.Take());
         //r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
-        
+
         ServerThread thread = new(r.Object);
 
         SoftStop s = new(thread);
