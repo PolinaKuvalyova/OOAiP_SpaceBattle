@@ -258,8 +258,8 @@ public class ServerThreadTest
         Mock<IReceiver> r = new();
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
 
-        //r.Setup(r => r.Receive()).Returns(() => queue.Take());
-        //r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
+        r.Setup(r => r.Receive()).Returns(() => queue.Take());
+        r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
 
         ServerThread thread = new(r.Object);
 
