@@ -6,7 +6,7 @@ public class SoftStop : ICommand
     public Action action;
     public SoftStop(ServerThread thread)
     {
-        this.action = new Action(() => {});
+        this.action = () => {};
         this.thread = thread;
     }
 
