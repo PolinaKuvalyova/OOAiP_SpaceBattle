@@ -15,11 +15,7 @@ public class SoftStop : ICommand
         this.thread = thread;
         this.action = action;
     }
-
-    public Action Get()
-    {
-        return this.action;
-    }
+    
     public void Execute()
     {
         int id = Hwdtech.IoC.Resolve<int>("Get id by thread", thread);
