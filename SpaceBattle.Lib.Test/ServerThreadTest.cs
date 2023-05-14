@@ -264,7 +264,6 @@ public class ServerThreadTest
 
         ServerThread thread = new(r.Object);
 
-
         SoftStop s = new(thread);
 
         s.Get()();
