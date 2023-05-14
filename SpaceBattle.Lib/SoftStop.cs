@@ -28,4 +28,8 @@ public class SoftStop : ICommand
             }
         }).Execute();
     }
+    public Action Get()
+    {
+        return this.action;
+    }
 }
