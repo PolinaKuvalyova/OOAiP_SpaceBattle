@@ -259,7 +259,6 @@ public class ServerThreadTest
         r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
 
         ServerThread thread = new(r.Object);
-
         SoftStop s = new(thread);
 
         s.Get()();
