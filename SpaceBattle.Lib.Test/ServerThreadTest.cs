@@ -256,4 +256,5 @@ public class ServerThreadTest
         Assert.Equal(softStop.action, softStop1.action);
         Assert.IsType<Action>(softStop.action);
     }
+
 }
