@@ -28,7 +28,7 @@ public class SoftStop : ICommand
                 thread.HandleCommand();
             }
             else{
-                Hwdtech.IoC.Resolve<Hwdtech.ICommand>("Send Command", id, Hwdtech.IoC.Resolve<Hwdtech.ICommand>("Hard Stop The Thread", id, this.action)).Execute();
+                Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", id, this.action)).Execute();
             }
         }).Execute();
     }
