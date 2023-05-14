@@ -184,9 +184,6 @@ public class ServerThreadTest
 
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 14, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 5);
-        //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 6, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
         
