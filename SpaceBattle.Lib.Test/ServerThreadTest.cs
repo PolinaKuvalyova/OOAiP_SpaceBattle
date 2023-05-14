@@ -196,13 +196,13 @@ public class ServerThreadTest
                 Assert.False(receiver.IsEmpty());
             }
         );
-        var cmd1 = new ActionCommand(
-            () => {}
-        );
+        //var cmd1 = new ActionCommand(
+        //    () => {}
+        //);
 
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", 4, () => {event_.Set();}).Execute();
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd1).Execute();
+        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
 
         event_.WaitOne();
 
@@ -252,8 +252,8 @@ public class ServerThreadTest
         Mock<IReceiver> r = new();
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
 
-        r.Setup(r => r.Receive()).Returns(() => queue.Take());
-        r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
+        //r.Setup(r => r.Receive()).Returns(() => queue.Take());
+        //r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
 
         ServerThread thread = new(r.Object);
         SoftStop s = new(thread);
