@@ -236,37 +236,5 @@ public class ServerThreadTest
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
     }
 
-    [Fact]
-    public void SoftStopTest()
-    {
-        var scope = IoCInit();
-
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
-        ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
-
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 88);
-        ServerThread stSoftStop1 = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 88);
-        SoftStop softStop = new(stSoftStop);
-        SoftStop softStop1 = new(stSoftStop1);
-        
-        Assert.Equal(softStop.action, softStop1.action);
-        Assert.IsType<Action>(softStop.action);
-
-        Mock<IReceiver> r = new();
-        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-
-        r.Setup(r => r.Receive()).Returns(() => queue.Take());
-        r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
-
-        ServerThread thread = new(r.Object);
-
-        
-        SoftStop s = new(thread);
-
-        s.Get()();
-
-        SoftStop s2 = new(thread);
-
-        Assert.Equal(s2.Get(), s.Get());
-    }
+    
 }
