@@ -138,7 +138,6 @@ public class ServerThreadTest
         AutoResetEvent event_ = new AutoResetEvent(false);
 
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 6, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
         
@@ -160,7 +159,6 @@ public class ServerThreadTest
             }
         );
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Soft Stop The Thread", 4, () => {event_.Set();}).Execute();
-        //Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Soft Stop The Thread", 6).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd1).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd2).Execute();
@@ -181,8 +179,6 @@ public class ServerThreadTest
         AutoResetEvent event_ = new AutoResetEvent(false);
 
         Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 5);
-        //Hwdtech.IoC.Resolve<object>("Create And Start Thread", 6, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
 
 
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
@@ -196,9 +192,6 @@ public class ServerThreadTest
                 Assert.False(receiver.IsEmpty());
             }
         );
-        //var cmd1 = new ActionCommand(
-        //    () => {}
-        //);
 
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
         Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", 4, () => {event_.Set();}).Execute();
@@ -251,9 +244,6 @@ public class ServerThreadTest
 
         Mock<IReceiver> r = new();
         BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-
-        //r.Setup(r => r.Receive()).Returns(() => queue.Take());
-        //r.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
 
         ServerThread thread = new(r.Object);
         SoftStop s = new(thread);
