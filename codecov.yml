@@ -1,0 +1,4 @@
+ignore:
+  ["SpaceBattle.Lib.Test"]
+codecov:
+  token: ${{ secrets.CODECOV_TOKEN }}

@@ -1,0 +1,29 @@
+name: .NET
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Setup test enviroment
+      run: dotnet tool install --global dotnet-coverage
+    - name: Test
+      run: dotnet-coverage collect 'dotnet test' -f xml  -o 'coverage.xml'
+    - name: Check CodeCov YML
+      run: curl --data-binary @codecov.yml https://codecov.io/validate
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+          token: 7c62fdba-4951-4f14-87a5-dc31b4be2432

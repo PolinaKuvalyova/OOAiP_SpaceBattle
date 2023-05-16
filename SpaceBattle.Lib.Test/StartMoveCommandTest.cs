@@ -9,7 +9,7 @@ public class StartMoveCommandTest
     {
         new Hwdtech.Ioc.InitScopeBasedIoCImplementationCommand().Execute();
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMoveble", 
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMovable", 
         (object[] args) => 
         {
             MovableAdapter adapter = new MovableAdapter(args);
@@ -33,7 +33,7 @@ public class StartMoveCommandTest
 
         command.Setup(x => x.get_property("object")).Returns((object) obj.Object);
         command.Setup(x => x.get_property("queue")).Returns((object) queue);
-        command.Setup(x => x.get_property("velocity")).Returns((object) new Vector(5, 5) );
+        command.Setup(x => x.get_property("velocity")).Returns((object) new Vector(5, 5));
 
         StartMoveCommand start = new(command.Object);
         start.Execute();
@@ -54,7 +54,7 @@ public class StartMoveCommandTest
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", Hwdtech.IoC.Resolve<object>("Scopes.New", Hwdtech.IoC.Resolve<object>("Scopes.Root"))).Execute();
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMoveble", (object[] args) => 
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMovable", (object[] args) => 
         {
             MovableAdapter adapter = new MovableAdapter(args);
             return adapter;
@@ -63,7 +63,7 @@ public class StartMoveCommandTest
         Mock<IUObject> obj = new();
         obj.Setup(x => x.get_property("position")).Returns(new Vector(8, 8));
         obj.Setup(x => x.get_property("velocity")).Returns(new Vector(7, 7));
-        IMovable movable = Hwdtech.IoC.Resolve<IMovable>("Adapters.IUObject.IMoveble", obj.Object);
+        IMovable movable = Hwdtech.IoC.Resolve<IMovable>("Adapters.IUObject.IMovable", obj.Object);
 
         Assert.Equal(movable.velocity, new Vector(7, 7));
     }
