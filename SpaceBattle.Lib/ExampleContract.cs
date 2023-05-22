@@ -2,18 +2,43 @@
 using System.Runtime.Serialization;
 using CoreWCF.OpenApi.Attributes;
 
-namespace SpaceBattle.Lib
+namespace SpaceBattle.Lib;
+
+[DataContract]
+public class Contract
 {
-    [DataContract(Name = "ExampleContract", Namespace = "http://example.com")]
-    public class ExampleContract
+    [DataMember]
+    public JsonDictionary Registration { get; set; }
+}
+
+[Serializable]
+public class JsonDictionary : ISerializable
+{
+    // The value to serialize.
+    private Dictionary<string, object> m_entries;
+
+    public JsonDictionary()
     {
-        [DataMember(Name = "type", Order = 1)]
-        public string Type { get; set; }
+        m_entries = new Dictionary<string, object>();
+    }
 
-        [DataMember(Name = "game id", Order = 2)]
-        public string gameId { get; set; }
-
-        [DataMember(Name = "game item id", Order = 3)]
-        public int gameItemId { get; set; }
+    public IEnumerable<KeyValuePair<string, object>> Entries
+    {
+        get { return m_entries; }
+    }
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        foreach (var entry in m_entries)
+        {
+            info.AddValue(entry.Key, entry.Value);
+        }
+    }
+    protected JsonDictionary(SerializationInfo info, StreamingContext context)
+    {
+        m_entries = new Dictionary<string, object>();
+        foreach (var entry in info)
+        {
+            m_entries.Add(entry.Name, entry.Value);
+        }
     }
 }

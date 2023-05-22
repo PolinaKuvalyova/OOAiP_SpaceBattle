@@ -5,7 +5,7 @@ namespace SpaceBattle.Lib;
 [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
 public class WebApi : IWebApi
 {
-    public ExampleContract BodyEcho(ExampleContract param){
+    public Contract BodyEcho(Contract param){
         return param;
     }
 }
