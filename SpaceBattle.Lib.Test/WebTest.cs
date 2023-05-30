@@ -287,4 +287,36 @@ public class WebTest
 
     }
 
+    [Fact]
+    public void CreateShootCommand()
+    {
+        var scope = IoCInit();
+
+        Dictionary<string, object> ValueDictionary = new(){{"type", "MoveCommand"}, {"gameid", "1"}, {"objid", "obj123"}, {"thread", "2"}};
+
+        ManualResetEvent wait = new(false);
+
+        SpaceBattle.Lib.ICommand waitCommand = new ActionCommand(() =>
+        {
+            wait.WaitOne();
+        });
+
+        Hwdtech.IoC.Resolve<ServerThread>("Create And Start Thread", 2, () => {waitCommand.Execute();});
+
+        JsonDictionary jsonDictionary = new(ValueDictionary);
+        Contract contract = new();
+        contract.json = jsonDictionary;
+        WebApi Endpoint = new();
+        ServerThread thread = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 2);
+        IReceiver receiver = thread.receiver;
+
+        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 2, waitCommand).Execute();
+
+        //Endpoint.BodyEcho(contract);
+
+        Assert.False(receiver.IsEmpty());
+
+        wait.Set();
+    }
+
 }
