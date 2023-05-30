@@ -283,7 +283,6 @@ public class WebTest
         JsonDictionary jsonDictionary = new(dict);
         contract.json = jsonDictionary;
         //api.BodyEcho(contract);
-        
         //Assert.IsType<Contract>(api.BodyEcho(contract));
 
     }
