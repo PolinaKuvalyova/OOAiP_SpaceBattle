@@ -3,6 +3,13 @@ using VectorSpaceBattle;
 using Moq;
 using System.Collections.Concurrent;
 using SpaceBattle.Lib;
+using System.Threading;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
+using Newtonsoft;
 
 namespace SpaceBattle.Lib.Test;
 
@@ -63,5 +70,55 @@ public class WebTest
         }).Execute();
 
     }
-    
+    [Fact]
+    public void ContractTest()
+    {
+        new Hwdtech.Ioc.InitScopeBasedIoCImplementationCommand().Execute();
+        var scope = IoC.Resolve<object>("Scopes.New", IoC.Resolve<object>("Scopes.Root"));
+        IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();
+
+        Contract contract = new();
+        JsonDictionary jsonDictionary = new();
+        JsonDictionary jsonDictionary1 = new();
+
+        IEnumerable<KeyValuePair<string, object>> entries = jsonDictionary.Entries;
+
+        Dictionary<string, object> dict = new(){{"type", "move"}, {"gameId", "3"}, {"ID", "12547"}, {"action", "start"}};
+        FormatterConverter formatterConverter = new();
+        SerializationInfo serializationInfo = new(typeof(JsonDictionary), formatterConverter);
+        StreamingContext streamingContext = new();
+
+        serializationInfo.AddValue("thread", "3");
+
+        JsonDictionary jsonDictionary2 = new(dict);
+
+        contract.json = jsonDictionary;
+
+        MemoryStream memoryStream = new();
+
+        try
+        {
+            jsonDictionary2.GetObjectData(serializationInfo, streamingContext);
+            JsonDictionary jsonDictionary3 = new(serializationInfo, streamingContext);
+
+            var serialize = JsonSerializer.Serialize(contract);
+            var json = JsonSerializer.Deserialize<Contract>(serialize);
+
+            var serialize1 = JsonSerializer.Serialize(jsonDictionary);
+            var json1 = JsonSerializer.Deserialize<Contract>(serialize1);
+
+            var serialize2 = JsonSerializer.Serialize(jsonDictionary1);
+            var json2 = JsonSerializer.Deserialize<Contract>(serialize2);
+
+            Assert.IsType<Contract>(json);
+            Assert.IsType<Contract>(json1);
+            Assert.IsType<Contract>(json2);
+
+        }
+
+        catch(Exception e)
+        {
+            Assert.Empty(e.Message);
+        }
+    }
 }
