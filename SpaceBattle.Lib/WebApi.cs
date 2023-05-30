@@ -6,9 +6,13 @@ namespace SpaceBattle.Lib;
 public class WebApi : IWebApi
 {
     public Contract BodyEcho(Contract param){
-        foreach(object obj in param.json.Entries)
+        try
         {
-            Console.WriteLine(obj);
+            Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Create object by dictionary", param).Execute();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
         return param;
     }

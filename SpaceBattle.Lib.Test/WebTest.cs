@@ -16,11 +16,140 @@ namespace SpaceBattle.Lib.Test;
 public class WebTest
 {
     [Fact]
-    public void StrategyTest()
+    public object IoCInit()
     {
         new Hwdtech.Ioc.InitScopeBasedIoCImplementationCommand().Execute();
         var scope = IoC.Resolve<object>("Scopes.New", IoC.Resolve<object>("Scopes.Root"));
         IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();
+
+        Dictionary<int, ISender> dictionarySend = new();
+        Dictionary<int, ServerThread> dictionaryThread = new();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create And Start Thread", 
+        (object[] args) => 
+        {
+            Mock<IReceiver> receiver= new();
+            Mock<ISender> sender = new();
+            BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
+
+            receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
+            receiver.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
+
+            if(args.Count() == 2)
+            {
+                Action ac = (Action) args[1];
+                ActionCommand action = new(ac);
+                queue.Add(action);
+            }
+
+            sender.Setup(s => s.Send(It.IsAny<ICommand>())).Callback<ICommand>((command => queue.Add(command)));
+
+            ServerThread thread = new ServerThread(receiver.Object);
+            thread.Execute();
+
+            int id = (int) args[0];
+            dictionarySend.Add(id, sender.Object);
+            dictionaryThread.Add(id, thread);
+            return thread;
+
+        }).Execute();
+         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMovable", 
+        (object[] args) => 
+        {
+            MovableAdapter adapter = new MovableAdapter(args);
+            return adapter;
+        }).Execute();
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Send Command", 
+        (object[] args) => 
+        {
+            int id = (int) args[0];
+            ICommand cmd = (ICommand) args[1];
+            ISender send = dictionarySend[id];
+
+            
+            return new ActionCommand(() => {send.Send(cmd);});
+        }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Hard Stop The Thread", 
+        (object[] args) => 
+        {
+            int id = (int) args[0];
+            Action action = () => {};
+            ActionCommand sendHardStop = new ActionCommand(() => {});
+            if(args.Count() == 2)
+            {
+                Action ac = (Action) args[1];
+
+                ServerThread thread_ = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", id);
+                UpdateBehaviourCommand updateBeh= new(thread_, thread_.strategy + ac);
+                action = () => {
+                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, updateBeh).Execute();};
+            }
+            HardStop hardStop = new(dictionaryThread[id]);
+
+            sendHardStop = new ActionCommand(action + (() => {
+                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, hardStop).Execute();
+                }));
+            return sendHardStop;
+        }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Soft Stop The Thread", 
+        (object[] args) => 
+        {
+            int id = (int) args[0];
+            ISender sender = dictionarySend[id];
+            ActionCommand sendSoftStop = new ActionCommand(() => {});
+
+            if(args.Count() == 2)
+            {
+                Action ac = (Action) args[1];
+                ActionCommand action = new(ac);
+                SoftStop softStop = new(dictionaryThread[id], ac);
+                sendSoftStop = new ActionCommand(() => {
+                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, softStop).Execute();
+                });
+            }
+            else{
+                SoftStop softStop = new(dictionaryThread[id]);
+                sendSoftStop = new ActionCommand(() => {
+                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, softStop).Execute();
+                });
+            }
+            return (SpaceBattle.Lib.ICommand)sendSoftStop;
+        }).Execute();
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Thread by id", 
+        (object[] args) => 
+        {
+            int id = (int) args[0];
+            return dictionaryThread[id];
+        }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Send by id", 
+        (object[] args) => 
+        {
+            int id = (int) args[0];
+            return dictionarySend[id];
+        }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get id by thread", 
+        (object[] args) => 
+        {
+            ServerThread ac = (ServerThread) args[0];
+            var id = dictionaryThread.FirstOrDefault(x => x.Value == ac).Key;
+            
+            return (object) id;
+        }
+        ).Execute();
+
+        return scope;
+    }
+
+
+    [Fact]
+    public void StrategyTest()
+    {
+        var scope = IoCInit();
+        
         Dictionary<int, Queue<SpaceBattle.Lib.ICommand>> dictionaryQueue = new();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get object by id", 
@@ -30,7 +159,7 @@ public class WebTest
             return dictionaryQueue[id];
         }).Execute();
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "MoveCommand", 
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "CreateMoveCommandContinious", 
         (object[] args) => 
         {
             Dictionary<string, object> dict = (Dictionary<string, object>) args[0];
@@ -46,6 +175,26 @@ public class WebTest
             ICommand command = new StartMoveCommand(uob.Object);
 
             return command;
+        }).Execute();
+
+        Dictionary<string, string> d = new(){{"MoveCommand", "CreateMoveCommandContinious"}, {"StopCommand", "StopMove"}, 
+        {"FuelCommand", "FuelContinious"}, {"RotateCommand", "RotateContinious"}};
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "GetStrategy", 
+        (object[] args) => 
+        {
+            string arg = (string) args[0];
+            
+            return d[arg];
+        }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create object by dictionary", 
+        (object[] args) => 
+        {
+            Dictionary<string, object> dic = (Dictionary<string, object>) args[0];
+            string typeCmd = (string) dic["type"];
+
+            string strategy = Hwdtech.IoC.Resolve<string>("GetStrategy", typeCmd);
+            return Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>(strategy, dic);
         }).Execute();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "StopCommand", 
@@ -73,9 +222,7 @@ public class WebTest
     [Fact]
     public void ContractTest()
     {
-        new Hwdtech.Ioc.InitScopeBasedIoCImplementationCommand().Execute();
-        var scope = IoC.Resolve<object>("Scopes.New", IoC.Resolve<object>("Scopes.Root"));
-        IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();
+        var scope = IoCInit();
 
         Contract contract = new();
         JsonDictionary jsonDictionary = new();
@@ -120,4 +267,58 @@ public class WebTest
             Assert.Empty(e.Message);
         }
     }
+    [Fact]
+    public void WebApiTest()
+    {
+        var scope = IoCInit();
+
+        AutoResetEvent event_ = new AutoResetEvent(false);
+        Dictionary<string, object> dict = new(){{"MoveCommand", "CreateMoveCommandContinious"}};
+
+        WebApi api = new();
+        Contract contract = new();
+        JsonDictionary jsonDictionary = new(dict);
+        contract.json = jsonDictionary;
+        
+        //Assert.IsType<StartMoveCommand>(api.BodyEcho(contract));
+
+    }
+    
+
+    [Fact]
+    public void FuelTest()
+    {
+        var scope = IoCInit();
+
+        Dictionary<string, object> ValueDictionary = new(){{"type", "Shoot"}, {"gameid", "1"}, {"objid", "obj123"}, {"thread", "2"}};
+
+        ManualResetEvent wait = new(false);
+        SpaceBattle.Lib.ICommand waitCommand = new ActionCommand(() =>
+        {
+            wait.WaitOne();
+        });
+
+        Hwdtech.IoC.Resolve<ServerThread>("Create And Start Thread", 2, () => {waitCommand.Execute();});
+
+        JsonDictionary json_ = new(ValueDictionary);
+
+        Contract contract = new();
+
+        contract.json = json_;
+
+        WebApi Endpoint = new();
+
+        ServerThread thread = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 2);
+
+        IReceiver reciver = thread.receiver;
+
+        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 2, waitCommand).Execute();
+
+        Endpoint.BodyEcho(contract);
+
+        Assert.False(reciver.IsEmpty());
+
+        wait.Set();
+    }
+
 }
