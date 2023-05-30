@@ -113,7 +113,6 @@ public class WebTest
             Assert.IsType<Contract>(json);
             Assert.IsType<Contract>(json1);
             Assert.IsType<Contract>(json2);
-
         }
 
         catch(Exception e)
