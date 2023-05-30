@@ -10,6 +10,7 @@ public class WebApi : IWebApi
         {
             Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Create object by dictionary", param).Execute();
         }
+        
         catch (Exception e)
         {
             Console.WriteLine(e);
