@@ -5,7 +5,7 @@ namespace SpaceBattle.Lib;
 public class Contract
 {
     [DataMember]
-    public JsonDictionary json { get; set; }
+    public JsonDictionary ?json { get; set; }
 }
 
 [Serializable]

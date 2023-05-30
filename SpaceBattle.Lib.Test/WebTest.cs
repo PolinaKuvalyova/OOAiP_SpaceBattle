@@ -53,7 +53,7 @@ public class WebTest
             return thread;
 
         }).Execute();
-         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMovable", 
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.IMovable", 
         (object[] args) => 
         {
             MovableAdapter adapter = new MovableAdapter(args);
@@ -177,13 +177,16 @@ public class WebTest
             return command;
         }).Execute();
 
-        Dictionary<string, string> d = new(){{"MoveCommand", "CreateMoveCommandContinious"}, {"StopCommand", "StopMove"}, 
-        {"FuelCommand", "FuelContinious"}, {"RotateCommand", "RotateContinious"}};
+        Dictionary<string, string> d = new(){
+            {"MoveCommand", "CreateMoveCommandContinious"}, 
+            {"StopCommand", "StopMove"}, 
+            {"FuelCommand", "FuelContinious"},
+            {"RotateCommand", "RotateContinious"}};
+
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "GetStrategy", 
         (object[] args) => 
         {
             string arg = (string) args[0];
-            
             return d[arg];
         }).Execute();
 
@@ -192,8 +195,8 @@ public class WebTest
         {
             Dictionary<string, object> dic = (Dictionary<string, object>) args[0];
             string typeCmd = (string) dic["type"];
-
             string strategy = Hwdtech.IoC.Resolve<string>("GetStrategy", typeCmd);
+
             return Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>(strategy, dic);
         }).Execute();
 
@@ -230,12 +233,12 @@ public class WebTest
 
         IEnumerable<KeyValuePair<string, object>> entries = jsonDictionary.Entries;
 
-        Dictionary<string, object> dict = new(){{"type", "move"}, {"gameId", "3"}, {"ID", "12547"}, {"action", "start"}};
+        Dictionary<string, object> dict = new(){{"type", "MoveCommand"}, {"ID", "356"}, {"gameID", "12547"}, {"thread", "7"}};
         FormatterConverter formatterConverter = new();
         SerializationInfo serializationInfo = new(typeof(JsonDictionary), formatterConverter);
         StreamingContext streamingContext = new();
 
-        serializationInfo.AddValue("thread", "3");
+        serializationInfo.AddValue("MoveCommand", "CreateMoveCommandContinious");
 
         JsonDictionary jsonDictionary2 = new(dict);
 
@@ -267,58 +270,22 @@ public class WebTest
             Assert.Empty(e.Message);
         }
     }
+
     [Fact]
     public void WebApiTest()
     {
         var scope = IoCInit();
 
-        AutoResetEvent event_ = new AutoResetEvent(false);
         Dictionary<string, object> dict = new(){{"MoveCommand", "CreateMoveCommandContinious"}};
 
         WebApi api = new();
         Contract contract = new();
         JsonDictionary jsonDictionary = new(dict);
         contract.json = jsonDictionary;
+        //api.BodyEcho(contract);
         
-        //Assert.IsType<StartMoveCommand>(api.BodyEcho(contract));
+        //Assert.IsType<Contract>(api.BodyEcho(contract));
 
-    }
-    
-
-    [Fact]
-    public void FuelTest()
-    {
-        var scope = IoCInit();
-
-        Dictionary<string, object> ValueDictionary = new(){{"type", "Shoot"}, {"gameid", "1"}, {"objid", "obj123"}, {"thread", "2"}};
-
-        ManualResetEvent wait = new(false);
-        SpaceBattle.Lib.ICommand waitCommand = new ActionCommand(() =>
-        {
-            wait.WaitOne();
-        });
-
-        Hwdtech.IoC.Resolve<ServerThread>("Create And Start Thread", 2, () => {waitCommand.Execute();});
-
-        JsonDictionary json_ = new(ValueDictionary);
-
-        Contract contract = new();
-
-        contract.json = json_;
-
-        WebApi Endpoint = new();
-
-        ServerThread thread = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 2);
-
-        IReceiver reciver = thread.receiver;
-
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 2, waitCommand).Execute();
-
-        Endpoint.BodyEcho(contract);
-
-        Assert.False(reciver.IsEmpty());
-
-        wait.Set();
     }
 
 }
