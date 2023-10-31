@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CoreWCF.http" Version="1.3.2" />
+    <PackageReference Include="CoreWCF.nettcp" Version="1.3.2" />
+    <PackageReference Include="CoreWCF.primitives" Version="1.3.2" />
+    <PackageReference Include="CoreWCF.webhttp" Version="1.3.2" />
     <PackageReference Include="Hwdtech.Core" Version="1.0.0" />
     <PackageReference Include="Hwdtech.IoC" Version="1.0.0" />
     <PackageReference Include="Hwdtech.Ioc.ScopeBasedIoCImplementation" Version="1.0.0" />
