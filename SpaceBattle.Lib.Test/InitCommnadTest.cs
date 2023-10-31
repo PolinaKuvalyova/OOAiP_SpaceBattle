@@ -94,5 +94,57 @@ public class GameInitCommandTests
             }
             return list;
         }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Game.Objects.Setup", (object [] args) => 
+        {
+            IEnumerable<object> enumerable = (IEnumerable<object>) args[0];
+            return new ActionCommand(() => 
+            {
+                foreach(object obj in enumerable)
+                {
+                   Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Game.Object.Setup", obj).Execute();
+                }
+            });
+            
+        }).Execute();
+    }
+    [Fact]
+    public void InitTest()
+    {
+        RegisterDependency();
+
+        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("GameInitCommand", 8).Execute();
+
+        Assert.Equal(new Vector(0, 0), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "1"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "1"), "Fuel"));
+        Assert.Equal("1", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "1"), "OwnerID"));
+
+        Assert.Equal(new Vector(0, 5), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "2"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "2"), "Fuel"));
+        Assert.Equal("2", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "2"), "OwnerID"));
+
+        Assert.Equal(new Vector(10, 0), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "3"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "3"), "Fuel"));
+        Assert.Equal("1", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "3"), "OwnerID"));
+
+        Assert.Equal(new Vector(10, 5), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "4"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "4"), "Fuel"));
+        Assert.Equal("2", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "4"), "OwnerID"));
+
+        Assert.Equal(new Vector(20, 0), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "5"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "5"), "Fuel"));
+        Assert.Equal("1", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "5"), "OwnerID"));
+
+        Assert.Equal(new Vector(20, 5), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "6"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "6"), "Fuel"));
+        Assert.Equal("2", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "6"), "OwnerID"));
+
+        Assert.Equal(new Vector(30, 0), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "7"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "7"), "Fuel"));
+        Assert.Equal("1", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "7"), "OwnerID"));
+
+        Assert.Equal(new Vector(30, 5), Hwdtech.IoC.Resolve<Vector>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "8"), "Position"));
+        Assert.Equal(100, Hwdtech.IoC.Resolve<int>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "8"), "Fuel"));
+        Assert.Equal("2", Hwdtech.IoC.Resolve<string>("IUObject.Property.Get", Hwdtech.IoC.Resolve<object>("Game.Current.ObjById", "8"), "OwnerID"));
     }
 }
