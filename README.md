@@ -1,1 +1,1 @@
-The first laboratory work
+the second laboratory work of the second semester
