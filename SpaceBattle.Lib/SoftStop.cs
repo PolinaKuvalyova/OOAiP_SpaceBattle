@@ -10,6 +10,10 @@ public class SoftStop : ICommand
         this.thread = thread;
     }
 
+    public Action GetAction(){
+        return this.action;
+    }
+
     public SoftStop(ServerThread thread, Action action)
     {
         this.thread = thread;
@@ -24,7 +28,7 @@ public class SoftStop : ICommand
                 thread.HandleCommand();
             }
             else{
-                 Hwdtech.IoC.Resolve<ICommand>("Send Command", id, Hwdtech.IoC.Resolve<ICommand>("Hard Stop The Thread", id, this.action)).Execute();
+                 Hwdtech.IoC.Resolve<object>("Send Command", id, Hwdtech.IoC.Resolve<ICommand>("Hard Stop Thread", id, this.action));
             }
         }).Execute();
     }

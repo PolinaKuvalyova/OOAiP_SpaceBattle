@@ -1,257 +1,270 @@
-using Hwdtech;
-using Moq;
+namespace Spaceship.IoC.Test.No.Strategies;
 using System.Collections.Concurrent;
+using Moq;
+using Hwdtech;
+using SpaceBattle.Lib;
+using System.Threading;
 
-namespace SpaceBattle.Lib.Test;
-
-public class ServerThreadTest
+public class Stateful
 {
     [Fact]
-    public object IoCInit()
+    public void WrongThreadStop()
     {
-        new Hwdtech.Ioc.InitScopeBasedIoCImplementationCommand().Execute();
-        var scope = IoC.Resolve<object>("Scopes.New", IoC.Resolve<object>("Scopes.Root"));
-        IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();
+        Dependencies.Run();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q = new();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q1 = new();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q2 = new();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q3 = new();
 
-        Dictionary<int, ISender> dictionarySend = new();
-        Dictionary<int, ServerThread> dictionaryThread = new();
+        AutoResetEvent waiter = new(false);
+        ISender sender = new SenderAdapter(q);
+        IReceiver receiver = new RecieverAdapter(q);
+        IReceiver receiver1 = new RecieverAdapter(q1);
+        IReceiver receiver2 = new RecieverAdapter(q2);
+        IReceiver receiver3 = new RecieverAdapter(q3);
+        ServerThread thread = new(receiver, receiver2);
+        ServerThread wrongthread = new(receiver1, receiver3);
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create And Start Thread", 
-        (object[] args) => 
-        {
-            Mock<IReceiver> receiver= new();
-            Mock<ISender> sender = new();
-            BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
+        Action action = () => {
+            Assert.Throws<Exception>(() => {
+            waiter.Set();
+            new HardStop(wrongthread).Execute();
+            });
+        };
 
-            receiver.Setup(r => r.Receive()).Returns(() => queue.Take());
-            receiver.Setup(r => r.IsEmpty()).Returns(() => queue.Count == 0);
+        q.Add(new ActionCommand(action));
 
-            if(args.Count() == 2)
-            {
-                Action ac = (Action) args[1];
-                ActionCommand action = new(ac);
-                queue.Add(action);
-            }
+        thread.Start();
 
-            sender.Setup(s => s.Send(It.IsAny<ICommand>())).Callback<ICommand>((command => queue.Add(command)));
+        waiter.WaitOne();
+    }
+    
+    [Fact]
+    public void RecieverAdapterTests()
+    {
+        BlockingCollection<SpaceBattle.Lib.ICommand> q = new();
 
-            ServerThread thread = new ServerThread(receiver.Object);
-            thread.Execute();
+        Mock<SpaceBattle.Lib.ICommand> cmd = new();
 
-            int id = (int) args[0];
-            dictionarySend.Add(id, sender.Object);
-            dictionaryThread.Add(id, thread);
-            return thread;
+        q.Add(cmd.Object);
 
-        }).Execute();
+        IReceiver rec = new RecieverAdapter(q);
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Send Command", 
-        (object[] args) => 
-        {
-            int id = (int) args[0];
-            ICommand cmd = (ICommand) args[1];
-            ISender send = dictionarySend[id];
+        Assert.Equal(cmd.Object, rec.Receive());
 
-            
-            return new ActionCommand(() => {send.Send(cmd);});
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Hard Stop The Thread", 
-        (object[] args) => 
-        {
-            int id = (int) args[0];
-            Action action = () => {};
-            ActionCommand sendHardStop = new ActionCommand(() => {});
-            if(args.Count() == 2)
-            {
-                Action ac = (Action) args[1];
-
-                ServerThread thread_ = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", id);
-                UpdateBehaviourCommand updateBeh= new(thread_, thread_.strategy + ac);
-                action = () => {
-                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, updateBeh).Execute();};
-            }
-            HardStop hardStop = new(dictionaryThread[id]);
-
-            sendHardStop = new ActionCommand(action + (() => {
-                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, hardStop).Execute();
-                }));
-            return sendHardStop;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Soft Stop The Thread", 
-        (object[] args) => 
-        {
-            int id = (int) args[0];
-            ISender sender = dictionarySend[id];
-            ActionCommand sendSoftStop = new ActionCommand(() => {});
-
-            if(args.Count() == 2)
-            {
-                Action ac = (Action) args[1];
-                ActionCommand action = new(ac);
-                SoftStop softStop = new(dictionaryThread[id], ac);
-                sendSoftStop = new ActionCommand(() => {
-                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, softStop).Execute();
-                });
-            }
-            else{
-                SoftStop softStop = new(dictionaryThread[id]);
-                sendSoftStop = new ActionCommand(() => {
-                    Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", id, softStop).Execute();
-                });
-            }
-            return (SpaceBattle.Lib.ICommand)sendSoftStop;
-        }).Execute();
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Thread by id", 
-        (object[] args) => 
-        {
-            int id = (int) args[0];
-            return dictionaryThread[id];
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Send by id", 
-        (object[] args) => 
-        {
-            int id = (int) args[0];
-            return dictionarySend[id];
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get id by thread", 
-        (object[] args) => 
-        {
-            ServerThread ac = (ServerThread) args[0];
-            var id = dictionaryThread.FirstOrDefault(x => x.Value == ac).Key;
-            
-            return (object) id;
-        }
-        ).Execute();
-
-        return scope;
+        Assert.True(rec.IsEmpty());
     }
 
     [Fact]
-    public void SoftStopThreadTest()
+    public void SenderAdapterTests()
     {
-        var scope = IoCInit();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q = new();
 
-        AutoResetEvent event_ = new AutoResetEvent(false);
+        Mock<SpaceBattle.Lib.ICommand> cmd = new();
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+        ISender rec = new SenderAdapter(q);
 
-        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-        
-        IReceiver receiver = (Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
-        ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4);
+        Assert.Empty(q);
 
+        rec.Send(cmd.Object);
 
-        var cmd = new ActionCommand(
-            () => {
-                Assert.False(receiver.IsEmpty());
-            }
-        );
-        var cmd1 = new ActionCommand(
-            () => {}
-        );
-        var cmd2 = new ActionCommand(
-            () => {
-                event_.Set();
-            }
-        );
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Soft Stop The Thread", 4, () => {event_.Set();}).Execute();
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd1).Execute();
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd2).Execute();
+        Assert.Single(q);
 
-        event_.WaitOne();
-
-        Assert.True(receiver.IsEmpty());
-        event_.WaitOne();
-
-        Assert.True(st.stop);
-
-    }
-    [Fact]
-    public void HardStopThreadTest()
-    {
-        var scope = IoCInit();
-
-        AutoResetEvent event_ = new AutoResetEvent(false);
-
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 4, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-
-
-        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
-        
-        IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4)).receiver;
-        ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 4);
-
-
-        var cmd = new ActionCommand(
-            () => {
-                Assert.False(receiver.IsEmpty());
-            }
-        );
-
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop The Thread", 4, () => {event_.Set();}).Execute();
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 4, cmd).Execute();
-
-        event_.WaitOne();
-
-        Assert.False(receiver.IsEmpty());
-
-        Assert.True(st.stop);
     }
 
     [Fact]
-    public void StopThreadTestException()
+    public void AdaptersFieldsTest()
     {
-        var scope = IoCInit();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q = new();
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 40, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        ServerThread st = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 40);
+        RecieverAdapter rec = new RecieverAdapter(q);
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 7, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
-        IReceiver receiver =( Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 7)).receiver;
-        ServerThread st_stop = new(receiver);
-        StopCommand stopCommand = new(st_stop);
-        st_stop.Execute();
+        SenderAdapter snd = new SenderAdapter(q);
 
-        var cmd = new ActionCommand(
-            () => {
-                Assert.Throws<Exception>(() => {stopCommand.Execute();});
-            }
-        );
+        Assert.Equal(q, snd.queue);
 
-        Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", 40, cmd).Execute();
+        Assert.Equal(q, rec.queue);
     }
 
     [Fact]
-    public void SoftStopTest()
+    public void SendSingleCommandIntoLambdaInitializedThread()
     {
-        var scope = IoCInit();
+        Dependencies.Run();
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 8);
-        ServerThread stSoftStop = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 8);
+        ServerThread thread = IoC.Resolve<ServerThread>("Create and Start Thread", 1, () => {});
 
-        Hwdtech.IoC.Resolve<object>("Create And Start Thread", 88);
-        ServerThread stSoftStop1 = Hwdtech.IoC.Resolve<ServerThread>("Get Thread by id", 88);
-        SoftStop softStop = new(stSoftStop);
-        SoftStop softStop1 = new(stSoftStop1);
-        
-        Assert.Equal(softStop.action, softStop1.action);
-        Assert.IsType<Action>(softStop.action);
+        AutoResetEvent waiter = new(false);
 
-        Mock<IReceiver> r = new();
-        BlockingCollection<ICommand> queue = new BlockingCollection<ICommand>();
+        ActionCommand cmd =  new(() => {Assert.Single(((RecieverAdapter)thread.receiver).queue);});
 
-        ServerThread thread = new(r.Object);
-        SoftStop s = new(thread);
-        s.Get()();
-        SoftStop s2 = new(thread);
+        IoC.Resolve<object>("Send Command", 1, cmd);
 
-        Assert.Equal(s2.Get(), s.Get());
+        cmd =  new(() => {waiter.Set();});
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        waiter.WaitOne();
+
+        Assert.Empty(((RecieverAdapter)thread.receiver).queue);
     }
 
+    [Fact]
+    public void SendSingleCommandIntoLambdaLessInitializedThread()
+    {
+        Dependencies.Run();
+
+        ServerThread thread = IoC.Resolve<ServerThread>("Create and Start Thread", 1);
+
+        AutoResetEvent waiter = new(false);
+
+        ActionCommand cmd =  new(() => {Assert.Single(((RecieverAdapter)thread.receiver).queue);});
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        cmd =  new(() => {waiter.Set();});
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        waiter.WaitOne();
+
+        Assert.Empty(((RecieverAdapter)thread.receiver).queue);
+    }
+    
+    [Fact]
+    public void SoftStopThread()
+    {
+        object scope = Dependencies.Run();
+
+
+        AutoResetEvent waiter = new(false);
+
+        ActionCommand cmd = new(() => {});
+
+        ServerThread thread = IoC.Resolve<ServerThread>("Create and Start Thread", 1, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+        ServerThread thread2 = IoC.Resolve<ServerThread>("Create and Start Thread", 3, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+
+        IoC.Resolve<SpaceBattle.Lib.ICommand>("Soft Stop Thread", 3).Execute();
+        IoC.Resolve<SpaceBattle.Lib.ICommand>("Soft Stop Thread", 1, () => {waiter.Set();}).Execute();        
+
+        Assert.False(thread.stop);
+
+        waiter.WaitOne();
+
+        Assert.True(thread.stop);
+    }
+    
+
+    [Fact]
+    public void SoftStopAction()
+    {
+        BlockingCollection<SpaceBattle.Lib.ICommand> q = new();
+
+        IReceiver ra = new RecieverAdapter(q);
+
+        BlockingCollection<SpaceBattle.Lib.ICommand> q1 = new();
+
+        IReceiver ra1 = new RecieverAdapter(q1);
+
+        ServerThread thread = new(ra, ra1);
+
+        SoftStop ssc = new(thread);
+
+        SoftStop ssc2 = new(thread);
+
+        Assert.Equal(ssc2.GetAction(), ssc.GetAction());
+    }
+    [Fact]
+    public void HardStopThread()
+    {
+        Dependencies.Run();
+
+        AutoResetEvent waiter = new(false);
+
+        ServerThread thread = IoC.Resolve<ServerThread>("Create and Start Thread", 1);
+        ServerThread thread2 = IoC.Resolve<ServerThread>("Create and Start Thread", 3);
+
+
+        Assert.False(thread.stop);
+        Assert.False(thread2.stop);
+
+        IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop Thread", 1).Execute();
+        IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop Thread", 3, () => {waiter.Set();}).Execute();
+
+        waiter.WaitOne();
+
+        Assert.True(thread.stop);
+        Assert.True(thread2.stop);
+    }
+    
+    [Fact]
+    public void SoftAwaitTest()
+    {
+        var scope = Dependencies.Run();
+
+        AutoResetEvent waiter = new(false);
+
+        ServerThread thread = IoC.Resolve<ServerThread>("Create and Start Thread", 1, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+
+        ActionCommand cmd = new(() => {});
+
+        Assert.True(thread.receiver.IsEmpty());
+
+        IoC.Resolve<SpaceBattle.Lib.ICommand>("Soft Stop Thread", 1, () => {waiter.Set();}).Execute();
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        waiter.WaitOne();
+
+        Assert.True(thread.receiver.IsEmpty());
+    }
+    
+    [Fact]
+    public void HardNonAwaitTest()
+    {
+        var scope = Dependencies.Run();
+
+        AutoResetEvent waiter = new(false);
+
+        ServerThread thread = IoC.Resolve<ServerThread>("Create and Start Thread", 1, () => {IoC.Resolve<Hwdtech.ICommand>("Scopes.Current.Set", scope).Execute();});
+
+        ActionCommand cmd = new(() => {});
+
+        Assert.True(thread.receiver.IsEmpty());
+
+        IoC.Resolve<SpaceBattle.Lib.ICommand>("Hard Stop Thread", 1, () => {waiter.Set();}).Execute();
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        IoC.Resolve<object>("Send Command", 1, cmd);
+
+        waiter.WaitOne();
+
+        Assert.False(thread.receiver.IsEmpty());
+    }
+
+    [Fact]
+    public void HandleOrderTest()
+    {
+        AutoResetEvent waiter = new(false);
+        bool isHandled = false;
+        BlockingCollection<SpaceBattle.Lib.ICommand> q = new();
+        BlockingCollection<SpaceBattle.Lib.ICommand> q2 = new();
+        ISender sender = new SenderAdapter(q);
+        IReceiver receiver = new RecieverAdapter(q);
+        IReceiver receiver2 = new RecieverAdapter(q2);
+        ServerThread thread = new(receiver, receiver2);
+
+        q2.Add(new ActionCommand(() => {
+            isHandled = true;
+            waiter.Set();
+            }));
+
+        thread.Start();
+
+        waiter.WaitOne();
+
+        Assert.True(isHandled);
+    }
 }
