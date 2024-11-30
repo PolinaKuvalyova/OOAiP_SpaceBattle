@@ -1,42 +1,55 @@
+using System;
+using System.Threading;
+using Hwdtech;
 namespace SpaceBattle.Lib;
+
 public class ServerThread
 {
     public Thread thread;
+    public IReceiver receiver;
+    public IReceiver orderReciever;
     public bool stop = false;
     public Action strategy;
-    public IReceiver receiver;
-    public ServerThread(IReceiver receiver)
-    {
-        this.receiver = receiver;
 
-        this.strategy = () => {
+    internal void Stop() => stop = true;
+
+    internal void HandleCommand()
+    {
+        if(!receiver.IsEmpty())
+        {
+            var cmd = receiver.Receive();
+
+            cmd.Execute();
+        }
+        
+        if(!orderReciever.IsEmpty())
+        {
+            var order = orderReciever.Receive();
+
+            order.Execute();
+        }
+    }
+    public ServerThread(IReceiver queue, IReceiver orderQueue)
+    {
+        this.orderReciever = orderQueue;
+        this.receiver = queue;
+        strategy = () =>
+        {
             HandleCommand();
         };
 
-        this.thread = new Thread(() => 
+        thread = new Thread(() =>
         {
-            while(!stop) 
-            {
-                strategy();
-            }
+            while (!stop) strategy();
         });
     }
-    internal void HandleCommand()
+    internal void UpdateBehaviour(Action newBehaviour)
     {
-        var cmd = receiver.Receive();
-        cmd.Execute();
-    }
+        strategy = newBehaviour;
 
-    public void UpdateBehaviour(Action newBeh)
-    {
-        strategy = newBeh;
     }
-
-    public void Stop()
+    public void Start()
     {
-        stop = true;
-    }
-    public void Execute(){
         thread.Start();
     }
 }
