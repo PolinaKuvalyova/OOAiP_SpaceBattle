@@ -171,7 +171,7 @@ public class Stateful
 
         SoftStop ssc2 = new(thread);
 
-        Assert.Equal(ssc2.GetAction(), ssc.GetAction());
+        Assert.Equal(ssc2.Get(), ssc.Get());
     }
     [Fact]
     public void HardStopThread()

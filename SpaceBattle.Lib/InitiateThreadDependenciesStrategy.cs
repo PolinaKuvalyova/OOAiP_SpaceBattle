@@ -45,10 +45,9 @@ public class InitiateThreadDependenciesStrategy{
             return obj;
         }).Execute();
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Message deserialize", (object[] args) => {
-            SpaceBattle.Lib.ICommand cmd = (SpaceBattle.Lib.ICommand) args[0];
-            return cmd;
-        }).Execute(); 
+
+
+
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Send Command", (object[] args) => {
             SpaceBattle.Lib.ICommand cmd = (SpaceBattle.Lib.ICommand) args[0];
@@ -62,24 +61,14 @@ public class InitiateThreadDependenciesStrategy{
             return (object)true; //todo: fix
         }).Execute();
 
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.Movable", (object[] args) => 
-        {
-            MovableAdapter adp = new MovableAdapter(args);
-            return adp;
-        }).Execute();
-
-         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "IoC.MoveCommand", (object[] args) =>
-        {
-            return (SpaceBattle.Lib.ICommand) new MoveCommand(Hwdtech.IoC.Resolve<IMovable>("Adapters.IUObject.Movable", args));
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "ContiniousMovement.Get.Dependencies", (object[] args) =>
-        {
-            List<string> deps = new List<string>{"MoveCommand"};
-            return deps;
-        }).Execute();
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Stop Move Command", (object[] args) => 
+        {
+            Mock<SpaceBattle.Lib.ICommand> cmd = new();
+            return cmd.Object;
+        }).Execute();
+
+        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Start Move Command", (object[] args) => 
         {
             Mock<SpaceBattle.Lib.ICommand> cmd = new();
             return cmd.Object;
@@ -102,7 +91,7 @@ public class InitiateThreadDependenciesStrategy{
         {
             Dictionary<string, object> MessageContent = (Dictionary<string, object>) args[0];
             IUObject obj = Hwdtech.IoC.Resolve<IUObject>("Get Object by ids", MessageContent["gameid"], MessageContent["objid"]);
-            SpaceBattle.Lib.ICommand cmd = IoC.Resolve<SpaceBattle.Lib.ICommand>("IoC.CreateMacro", "ContiniousMovement", obj);
+            SpaceBattle.Lib.ICommand cmd = Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Start Move Command", obj);
             return cmd;
         }).Execute();
 

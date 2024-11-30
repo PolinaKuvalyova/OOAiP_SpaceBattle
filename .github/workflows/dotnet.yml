@@ -1,29 +1,43 @@
-name: .NET
+name: .Net 6 CI Build
 
-on: [push]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    name: CI Build
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
+        dotnet-version: 6.0.x
+
+    - name: Restore Dependencies
+      run: dotnet restore 
+
     - name: Build
-      run: dotnet build --no-restore
-    - name: Setup test enviroment
-      run: dotnet tool install --global dotnet-coverage
+      run: dotnet build --configuration Release --no-restore
+
     - name: Test
-      run: dotnet-coverage collect 'dotnet test' -f xml  -o 'coverage.xml'
-    - name: Check CodeCov YML
-      run: curl --data-binary @codecov.yml https://codecov.io/validate
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      run: dotnet test --collect:"XPlat Code Coverage"  --results-directory ./coverage
+
+    - name: Code Coverage Report
+      uses: irongut/CodeCoverageSummary@v1.3.0
       with:
-          token: 7c62fdba-4951-4f14-87a5-dc31b4be2432
+        filename: ./coverage/**/coverage.cobertura.xml
+        badge: true
+        fail_below_min: true
+        format: markdown
+        hide_branch_rate: true
+        hide_complexity: true
+        indicators: true
+        output: both
+        thresholds: '20 80'
+        

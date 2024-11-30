@@ -117,13 +117,7 @@ public class Dependencies
 
             sender.Send(cmd);
             return (object) true;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Message deserialize", (object[] args) => {
-            SpaceBattle.Lib.ICommand cmd = (SpaceBattle.Lib.ICommand) args[0];
-
-            return cmd;
-        }).Execute();     
+        }).Execute();    
 
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Hard Stop Thread", (object[] args) => 
         {
@@ -179,128 +173,9 @@ public class Dependencies
             }
         }).Execute();
 
-         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Adapters.IUObject.Movable", (object[] args) => 
-        {
-            MovableAdapter adp = new MovableAdapter(args);
-            return adp;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "ContiniousMovement.Get.Dependencies", (object[] args) =>
-        {
-            List<string> deps = new List<string>{"MoveCommand"};
-            return deps;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "IoC.MoveCommand", (object[] args) =>
-        {
-            return (SpaceBattle.Lib.ICommand) new MoveCommand(Hwdtech.IoC.Resolve<IMovable>("Adapters.IUObject.Movable", args));
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Get Object by ids", (object[] args) => 
-        {
-            int GameID = (int) args[0];
-
-            string ObjectID = (string) args[1];
-
-            IUObject obj = GamesObjects[GameID][ObjectID];
-
-            return obj;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Stop Move Command", (object[] args) => 
-        {
-            IUObject obj = (IUObject) args[0];
-
-            Mock<SpaceBattle.Lib.ICommand> cmd = new();
-
-            return cmd.Object;
-
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Start Rotation Command", (object[] args) => 
-        {
-            IUObject obj = (IUObject) args[0];
-
-            Mock<SpaceBattle.Lib.ICommand> cmd = new();
-
-            return cmd.Object;
-
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Shoot Command", (object[] args) => 
-        {
-            IUObject obj = (IUObject) args[0];
-
-            Mock<SpaceBattle.Lib.ICommand> cmd = new();
-
-            return cmd.Object;
-
-        }).Execute();
-
         Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Map protobuf to dict", (object[] args) => {
             return ProtobufMapperStrategy.Run((MapField<string, string>) args[0]);
         }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Deserialize Message to Command", (object[] args) => 
-        {
-
-            Dictionary<string, object> MessageContent = (Dictionary<string, object>) args[0];
-
-            string MessageType = (string) MessageContent["type"];
-
-            SpaceBattle.Lib.ICommand cmd = Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Create " + MessageType + " by Message", MessageContent);
-
-            string ThreadID = (string) MessageContent["thread"];
-
-            return ((SpaceBattle.Lib.ICommand)Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Send Command", ThreadID, cmd));
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create StartMove by Message", (object[] args) => 
-        {
-            Dictionary<string, object> MessageContent = (Dictionary<string, object>) args[0];
-
-            IUObject obj = Hwdtech.IoC.Resolve<IUObject>("Get Object by ids", MessageContent["gameid"], MessageContent["objid"]);
-
-            SpaceBattle.Lib.ICommand cmd = IoC.Resolve<SpaceBattle.Lib.ICommand>("IoC.CreateMacro", "ContiniousMovement", obj);
-
-            return cmd;
-        }).Execute();
-
-        //Hwdtech.IoC.Resolve<ServerThread>("Create and Start Thread", "2");
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create StopMove by Message", (object[] args) => 
-        {
-            Dictionary<string, object> MessageContent = (Dictionary<string, object>) args[0];
-
-            IUObject obj = Hwdtech.IoC.Resolve<IUObject>("Get Object by ids", MessageContent["gameid"], MessageContent["objid"]);
-
-            SpaceBattle.Lib.ICommand cmd = Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Stop Move Command", obj);
-
-            return cmd;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create StartRotate by Message", (object[] args) => 
-        {
-            Dictionary<string, object> MessageContent = (Dictionary<string, object>) args[0];
-
-            IUObject obj = Hwdtech.IoC.Resolve<IUObject>("Get Object by ids", MessageContent["gameid"], MessageContent["objid"]);
-
-            SpaceBattle.Lib.ICommand cmd = Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Start Rotation Command", obj);
-
-            return cmd;
-        }).Execute();
-
-        Hwdtech.IoC.Resolve<Hwdtech.ICommand>("IoC.Register", "Create Shoot by Message", (object[] args) => 
-        {
-            Dictionary<string, object> MessageContent = (Dictionary<string, object>) args[0];
-
-            IUObject obj = Hwdtech.IoC.Resolve<IUObject>("Get Object by ids", MessageContent["gameid"], MessageContent["objid"]);
-
-            SpaceBattle.Lib.ICommand cmd = Hwdtech.IoC.Resolve<SpaceBattle.Lib.ICommand>("Shoot Command", obj);
-
-            return cmd;
-        }).Execute();
-
         return scope;
     }
 }

@@ -10,10 +10,6 @@ public class SoftStop : ICommand
         this.thread = thread;
     }
 
-    public Action GetAction(){
-        return this.action;
-    }
-
     public SoftStop(ServerThread thread, Action action)
     {
         this.thread = thread;
